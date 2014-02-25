@@ -76,25 +76,24 @@ namespace Revenj.Http
 			list.Add(handler);
 		}
 
-		public RouteHandler Find(HttpListenerRequest request, out UriTemplateMatch templateMatch)
+		public RouteHandler Find(string httpMethod, Uri url, out UriTemplateMatch templateMatch)
 		{
-			var reqId = request.HttpMethod + ":" + request.Url.LocalPath;
+			var reqId = httpMethod + ":" + url.LocalPath;
 			KeyValuePair<RouteHandler, Uri> rh;
 			if (Cache.TryGetValue(reqId, out rh))
 			{
-				templateMatch = rh.Key.Template.Match(rh.Value, request.Url);
+				templateMatch = rh.Key.Template.Match(rh.Value, url);
 				return rh.Key;
 			}
 			templateMatch = null;
 			List<RouteHandler> handlers;
-			if (!MethodRoutes.TryGetValue(request.HttpMethod, out handlers))
+			if (!MethodRoutes.TryGetValue(httpMethod, out handlers))
 				return null;
-			var reqUrl = request.Url;
-			var url = reqUrl.ToString();
-			var baseAddr = new Uri(url.Substring(0, url.Length - request.RawUrl.Length));
+			var urlstr = url.ToString();
+			var baseAddr = new Uri(urlstr.Substring(0, urlstr.Length - url.PathAndQuery.Length));
 			foreach (var h in handlers)
 			{
-				var match = h.Template.Match(baseAddr, reqUrl);
+				var match = h.Template.Match(baseAddr, url);
 				if (match != null)
 				{
 					templateMatch = match;
@@ -103,6 +102,11 @@ namespace Revenj.Http
 				}
 			}
 			return null;
+		}
+
+		public RouteHandler Find(HttpListenerRequest request, out UriTemplateMatch templateMatch)
+		{
+			return Find (request.HttpMethod, request.Url, out templateMatch);
 		}
 	}
 }

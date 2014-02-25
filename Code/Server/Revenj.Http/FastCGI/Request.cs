@@ -32,6 +32,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using IOPath = System.IO.Path;
+using System.Web.Hosting;
 
 namespace Mono.FastCgi {
 	public class Request
@@ -123,9 +124,7 @@ namespace Mono.FastCgi {
 		private string path = null;
 		
 		private string rpath = null;
-		
-		private Mono.WebServer.FastCgi.ApplicationHost appHost;
-		
+
 		public string HostName {
 			get {
 				if (vhost == null)
@@ -162,13 +161,7 @@ namespace Mono.FastCgi {
 				return rpath;
 			}
 		}
-		
-		internal protected Mono.WebServer.FastCgi.ApplicationHost ApplicationHost {
-			get {
-				return appHost;
-			}
-		}
-		
+
 		#endregion
 		
 		
@@ -225,12 +218,63 @@ namespace Mono.FastCgi {
 			ParseParameterData ();
 		}
 
+		public static string MapPath (string virtualPath)
+		{
+			string physPath;
+
+			physPath = HostingEnvironment.MapPath ((virtualPath == null || virtualPath.Length == 0 || virtualPath.TrimStart().Length == 0) ? "/" : virtualPath);
+			//if (physPath != null && physPath.Length != 0)
+				return physPath;
+
+			// For old .NET 1.x, and as a fallback mechanism until Mono's 
+			// HostingEnvironment.MapPath method can perform the mapping 
+			// without requiring an HttpContext.Current.Request object
+			// (the MS one can do it), just map the path somewhat similar 
+			// to the Mono.WebServer.MonoWorkerRequest.MapPath method (but 
+			// unfortunately without the customizable event mechanism)...
+			// TODO: Remove the logic below for NET_2_0 as soon as Mono's
+			// DefaultVirtualPathProvider.MapPath method works properly (and then also
+			// remove the workarounds in ApplicationHost.VirtualFileExists and
+			// ApplicationHost.VirtualDirectoryExists)
+
+			/*
+			if (virtualPath == null || virtualPath.Length == 0 || virtualPath == this.VPath) {
+				if (IOPath.DirectorySeparatorChar != '/')
+					return this.Path.Replace ('/', IOPath.DirectorySeparatorChar);
+				else
+					return this.Path;
+			}
+
+			physPath = virtualPath;
+			if (physPath[0] == '~' && physPath.Length > 2 && physPath[1] == '/')
+				physPath = physPath.Substring (1);
+
+			int len = this.VPath.Length;
+			if (physPath.StartsWith (this.VPath) && (physPath.Length == len || physPath[len] == '/'))
+				physPath = physPath.Substring (len + 1);
+
+			int i = 0;
+			int len = physPath.Length;
+			while (i < len && physPath [i] == '/')
+				i++;
+
+			if (i < len)
+				physPath = physPath.Substring (i);
+			else
+				return this.Path;
+
+			if (IOPath.DirectorySeparatorChar != '/')
+				physPath = physPath.Replace ('/', IOPath.DirectorySeparatorChar);
+
+			return IOPath.Combine (this.Path, physPath);
+			*/
+		}
+
 		void ParseParameterData ()
 		{
 			string redirectUrl;
 			string pathInfo = GetParameter ("PATH_INFO");
 			string pathTranslated = GetParameter ("PATH_TRANSLATED");
-			Mono.WebServer.VPathToHost vapp;
 			if (pathTranslated == null || pathTranslated.Length == 0 || 
 				pathInfo == null || pathInfo.Length == 0 || pathInfo [0] != '/' || 
 				(null != (redirectUrl = GetParameter ("REDIRECT_URL")) && redirectUrl.Length != 0 && pathInfo != redirectUrl)) {
@@ -243,9 +287,7 @@ namespace Mono.FastCgi {
 					SetParameter ("PATH_INFO", String.Empty);
 				if (pathTranslated == null)
 					SetParameter ("PATH_TRANSLATED", String.Empty);
-				vapp = Mono.WebServer.FastCgi.Server.GetApplicationForPath (this.HostName, this.PortNumber, this.Path, this.PhysicalPath);
-				if (vapp != null)
-					appHost = (Mono.WebServer.FastCgi.ApplicationHost)vapp.AppHost;
+
 				return;
 			}
 
@@ -262,26 +304,13 @@ namespace Mono.FastCgi {
 			string virtPathInfo = String.Empty;
 			string physPathInfo = String.Empty;
 			try {
-				vapp = Mono.WebServer.FastCgi.Server.GetApplicationForPath (
-					this.HostName, this.PortNumber, virtPath, physPath);
-				if (vapp == null)
-					return;  // Set values in finally
-				appHost = (Mono.WebServer.FastCgi.ApplicationHost)vapp.AppHost;
-				if (appHost == null)
-					return;  // Set values in finally
-
 				// Split the virtual path and virtual path-info
 				string verb = GetParameter ("REQUEST_METHOD");
 				if (verb == null || verb.Length == 0)
 					verb = "GET";  // For the sake of paths, assume a default
-				appHost.GetPathsFromUri (verb, pathInfo, out virtPath, out virtPathInfo);
-				if (virtPathInfo == null)
-					virtPathInfo = String.Empty;
-				if (virtPath == null)
-					virtPath = String.Empty;
 
 				// Re-map the physical path
-				physPath = appHost.MapPath (virtPath);
+				physPath = MapPath(virtPath);
 				if (physPath == null)
 					physPath = String.Empty;
 
@@ -298,7 +327,7 @@ namespace Mono.FastCgi {
 				}
 				string physRoot = physPath;
 				try {
-					if (appHost.VirtualFileExists (virtPath)) {
+					if (File.Exists (physPath)) {
 						physRoot = IOPath.GetDirectoryName (physRoot);
 						if (physRoot == null)
 							physRoot = String.Empty;

@@ -31,12 +31,14 @@ using System;
 using System.Collections.Generic;
 using Mono.FastCgi;
 using System.Text;
+using System.Net;
+using System.Runtime.Serialization;
 
 namespace Mono.WebServer.FastCgi
 {
 	public class Responder : MarshalByRefObject, IResponder
 	{
-		private static string error500 =
+		/*private static string error500 =
 			"Status: 500 Internal Server Error\r\n" +
 			"Content-Type: text/html; charset=utf-8\r\n" +
 			"Connection: close\r\n\r\n" +
@@ -54,7 +56,7 @@ namespace Mono.WebServer.FastCgi
 			"			<tr><th>Physical Path</th><td>{3}</td>\r\n" +
 			"		</table>\r\n" +
 			"	</body>\r\n" +
-			"</html>\r\n";
+			"</html>\r\n";*/
 		
 		private ResponderRequest request;
 		
@@ -75,24 +77,49 @@ namespace Mono.WebServer.FastCgi
 			request.SendOutputText (PhysicalPath + "\r\n");
 		*/
 
-			ApplicationHost appHost = request.ApplicationHost;
-			
-			// If the application host is null, the server was
-			// unable to determine a sane plan. Alert the client.
-			if (appHost == null) {
-				request.SendOutputText (string.Format (error500,
-					HostName, PortNumber,
-					Path, PhysicalPath));
-				return -1;
+			var request = new WebRequest(new SerializationInfo(typeof(WebRequest), 
+			var response = context.Response;
+			try
+			{
+				UriTemplateMatch templateMatch;
+				var route = Routes.Find(request, out templateMatch);
+				if (route != null)
+				{
+					var auth = Authentication.TryAuthorize(context, route);
+					if (auth.Principal != null)
+					{
+						var ctx = new HttpThreadContex(request, response, templateMatch);
+						ThreadContext.Request = ctx;
+						ThreadContext.Response = ctx;
+						Thread.CurrentPrincipal = auth.Principal;
+						using (var stream = route.Handle(templateMatch, context))
+						{
+							if (stream.CanSeek)
+								response.ContentLength64 = stream.Length;
+							stream.CopyTo(response.OutputStream);
+						}
+					}
+					else ReturnError(response, (int)auth.ResponseCode, auth.Error);
+				}
+				else
+				{
+					var unknownRoute = "Unknown route " + request.RawUrl + " on method " + request.HttpMethod;
+					ReturnError(response, 404, unknownRoute);
+				}
 			}
-			
-			try {
-				appHost.ProcessRequest (this);
-			} catch (Exception e) {
-				Logger.Write (LogLevel.Error,
-					"ERROR PROCESSING REQUEST: " + e);
-				return -1;
+			catch (SecurityException sex)
+			{
+				ReturnError(response, (int)HttpStatusCode.Forbidden, sex.Message);
 			}
+			catch (WebFaultException<string> wfe)
+			{
+				ReturnError(response, (int)wfe.StatusCode, wfe.Detail);
+			}
+			catch (Exception ex)
+			{
+				ReturnError(response, 500, ex.Message);
+			}
+
 			
 			// MIN_VALUE means don't close.
 			return int.MinValue;

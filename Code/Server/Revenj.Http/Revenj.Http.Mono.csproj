@@ -36,6 +36,7 @@
     <DefineConstants>DEBUG;TRACE;MONO</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -44,6 +45,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -70,6 +72,7 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="Mono.Posix" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HttpServer.cs" />
@@ -89,6 +92,25 @@
     <Compile Include="Routes.cs" />
     <Compile Include="HttpAuth.cs" />
     <Compile Include="UriPattern.cs" />
+    <Compile Include="FastCGI\BeginRequestBody.cs" />
+    <Compile Include="FastCGI\ConfigurationManager.cs" />
+    <Compile Include="FastCGI\Connection.cs" />
+    <Compile Include="FastCGI\EndRequestBody.cs" />
+    <Compile Include="FastCGI\ISocketAbstraction.cs" />
+    <Compile Include="FastCGI\Logger.cs" />
+    <Compile Include="FastCGI\NameValuePair.cs" />
+    <Compile Include="FastCGI\Record.cs" />
+    <Compile Include="FastCGI\Request.cs" />
+    <Compile Include="FastCGI\Responder.cs" />
+    <Compile Include="FastCGI\ResponderRequest.cs" />
+    <Compile Include="FastCGI\Server.cs" />
+    <Compile Include="FastCGI\SocketFactory.cs" />
+    <Compile Include="FastCGI\StandardSocket.cs" />
+    <Compile Include="FastCGI\Strings.cs" />
+    <Compile Include="FastCGI\TcpSocket.cs" />
+    <Compile Include="FastCGI\UnixSocket.cs" />
+    <Compile Include="FastCGI\UnknownTypeBody.cs" />
+    <Compile Include="FastCGI\UnmanagedSocket.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\NGS.Common\NGS.Common.csproj">
@@ -231,4 +253,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <ItemGroup>
+    <Folder Include="FastCGI\" />
+  </ItemGroup>
 </Project>
