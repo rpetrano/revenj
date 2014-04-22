@@ -38,7 +38,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Oracle.DataAccess">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Dependencies\Oracle\Oracle.DataAccess.dll</HintPath>
     </Reference>
     <Reference Include="Remotion.Linq">
@@ -61,6 +60,9 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="NGS.DomainPatterns">
+      <HintPath>..\..\Domain\NGS.DomainPatterns\bin\Mono\NGS.DomainPatterns.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Attributes\DatabaseFunctionAttribute.cs" />

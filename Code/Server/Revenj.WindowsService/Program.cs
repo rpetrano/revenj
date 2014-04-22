@@ -3,6 +3,10 @@ using System.Linq;
 using System.ServiceProcess;
 using DSL;
 using NGS.Extensibility;
+using System.IO;
+using NGS.Features.Mailer;
+using NGS.DomainPatterns;
+using NGS.Logging;
 
 namespace Revenj.WindowsService
 {
@@ -10,6 +14,7 @@ namespace Revenj.WindowsService
 	{
 		static void Main(string[] args)
 		{
+			/*
 			var factory = Platform.Start<IObjectFactory>();
 			var extensibility = factory.Resolve<IExtensibilityProvider>();
 			var plugins = extensibility.FindPlugins<ServiceBase>();
@@ -30,6 +35,11 @@ namespace Revenj.WindowsService
 					s.Stop();
 			}
 			else ServiceBase.Run(new HostService(services));
+			*/
+			var factory = Platform.Start<IObjectFactory>();
+			factory.RegisterType(typeof(QueueProcessor));
+			var service = factory.Resolve<QueueProcessor>();
+			service.Start();
 		}
 	}
 }

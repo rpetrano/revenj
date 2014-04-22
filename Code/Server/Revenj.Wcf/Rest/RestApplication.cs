@@ -85,6 +85,12 @@ namespace Revenj.Wcf
 			var command = template.RelativePathSegments.FirstOrDefault();
 			var args = Uri.UnescapeDataString(template.QueryParameters.ToString()).Split('&');
 
+#if MONO
+			// RelavitvePathSegments doesn't work with wilcard templates in Mono
+			if (command == null && template.WildcardPathSegments.Count > 0)
+				command = template.WildcardPathSegments[0];
+#endif
+
 			if (command == null)
 				return Utility.ReturnError("Command not specified", HttpStatusCode.BadRequest);
 

@@ -39,7 +39,7 @@ namespace NGS.Features.Mailer.Serialization
 			var sav = new AlternateView(ContentStream)
 			{
 				BaseUri = BaseUri,
-				ContentId = ContentId,
+				//ContentId = ContentId,
 				ContentType = ContentType.GetContentType(),
 				TransferEncoding = TransferEncoding,
 			};

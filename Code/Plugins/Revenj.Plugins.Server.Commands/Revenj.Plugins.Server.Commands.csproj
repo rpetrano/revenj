@@ -32,9 +32,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
     <AssemblyOriginatorKeyFile>..\..\NGS.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Mono|AnyCPU'">
@@ -121,6 +118,14 @@
     <ProjectReference Include="..\..\Server\Revenj.Processing.Interface\Revenj.Processing.Interface.csproj">
       <Project>{721E3056-0F68-4874-B5E0-0B0223ECC4D7}</Project>
       <Name>Revenj.Processing.Interface</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Database\NGS.DatabasePersistence.Postgres\NGS.DatabasePersistence.Postgres.csproj">
+      <Project>{6BEE583B-B4CE-489B-A5D3-6EAF071438CC}</Project>
+      <Name>NGS.DatabasePersistence.Postgres</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NGS.Plugins.DatabasePersistence.Postgres\NGS.Plugins.DatabasePersistence.Postgres.csproj">
+      <Project>{8E943C88-AF40-4836-A8F6-681668514C83}</Project>
+      <Name>NGS.Plugins.DatabasePersistence.Postgres</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
