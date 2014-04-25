@@ -573,7 +573,7 @@ Global
 		{7A17AEAA-DD17-4D57-ACD9-B74A450D9E39} = {5304F374-4E2F-49A4-8506-4E33FF86C526}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = Server\Revenj.WindowsService\Revenj.WindowsService.Mono.csproj
+		StartupItem = Server\Revenj.SignalRWeb\Revenj.SignalRWeb.Mono.csproj
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

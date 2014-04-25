@@ -1,11 +1,15 @@
 using System;
 using System.Configuration;
+using System.Threading;
 using DSL;
 using Microsoft.AspNet.SignalR;
+using Microsoft.Owin;
 using Microsoft.Owin.Hosting;
 using NGS.DomainPatterns;
 using Owin;
-using System.Threading;
+using Revenj.SignalRWeb;
+
+[assembly: OwinStartup(typeof(Startup))]
 
 namespace Revenj.SignalRWeb
 {
@@ -17,7 +21,7 @@ namespace Revenj.SignalRWeb
 			if (string.IsNullOrEmpty(url))
 				throw new ConfigurationErrorsException("Missing 'Listen' key in your application config.");
 
-			using (WebApplication.Start<Startup>(url))
+			using (WebApp.Start<Startup>(url))
 			{
 				Console.WriteLine("Server running on {0}", url);
 				Thread.Sleep(Timeout.Infinite);
@@ -32,7 +36,7 @@ namespace Revenj.SignalRWeb
 			bool cd = false;
 			bool.TryParse(ConfigurationManager.AppSettings["SignalR.CrossDomain"], out cd);
 
-			var config = new HubConfiguration { EnableCrossDomain = cd };
+			var config = new HubConfiguration { EnableJSONP = cd };
 
 			int ct;
 			if (int.TryParse(ConfigurationManager.AppSettings["SignalR.ConnectionTimeout"], out ct) && ct > 0)
@@ -48,7 +52,7 @@ namespace Revenj.SignalRWeb
 			NotifyHub.Model = locator.Resolve<IDomainModel>();
 			NotifyHub.ChangeNotification = locator.Resolve<IDataChangeNotification>();
 
-			app.MapHubs(config);
+			app.MapSignalR(config);
 		}
 	}
 }

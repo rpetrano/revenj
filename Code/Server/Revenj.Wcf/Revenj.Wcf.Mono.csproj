@@ -24,7 +24,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Revenj.Wcf</RootNamespace>
     <AssemblyName>Revenj.Wcf</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <WcfConfigValidationEnabled>True</WcfConfigValidationEnabled>
     <UseIISExpress>false</UseIISExpress>
     <IISExpressSSLPort />
