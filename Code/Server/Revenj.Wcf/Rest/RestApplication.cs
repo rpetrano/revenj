@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
@@ -92,7 +92,14 @@ namespace Revenj.Wcf
 #endif
 
 			if (command == null)
-				return Utility.ReturnError("Command not specified", HttpStatusCode.BadRequest);
+			{
+				// RelavitvePathSegments doesn't work with wilcard templates in Mono
+				if (template.WildcardPathSegments.Count > 0)
+					command = template.WildcardPathSegments[0];
+
+				if (command == null)
+					return Utility.ReturnError("Command not specified", HttpStatusCode.BadRequest);
+			}
 
 			var commandType = CommandsRepository.Find(command);
 			if (commandType == null)
